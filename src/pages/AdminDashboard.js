@@ -63,8 +63,7 @@ function AdminDashboard() {
                   <strong>Table:</strong> {info.table_id}
                 </p>
                 <p>
-                  <strong>Remaining Time:</strong> {info.remaining_time}{" "}
-                  seconds
+                  <strong>Remaining Time:</strong> {info.remaining_time} seconds
                 </p>
                 <p>
                   <strong>CAN ID:</strong> {canId}
