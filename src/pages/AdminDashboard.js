@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io("http://127.0.0.1:5000");
 
 function AdminDashboard() {
   const [tables, setTables] = useState({});
-  const [timerDuration, setTimerDuration] = useState(0);
-  const [newDuration, setNewDuration] = useState("");
-
-  useEffect(() => {
-    fetchTablesStatus();
-    fetchTimerDuration();
-  }, []);
+  const [realTimeUpdates, setRealTimeUpdates] = useState([]);
 
   const fetchTablesStatus = async () => {
     try {
@@ -22,28 +19,31 @@ function AdminDashboard() {
     }
   };
 
-  const fetchTimerDuration = async () => {
-    try {
-      const response = await axios.get(
-        "http://127.0.0.1:5000/admin/timer_duration"
-      );
-      setTimerDuration(response.data.timer_duration);
-    } catch (err) {
-      console.error("Error fetching timer duration:", err);
-    }
-  };
+  useEffect(() => {
+    fetchTablesStatus();
 
-  const updateTimerDuration = async () => {
-    try {
-      await axios.post("http://127.0.0.1:5000/admin/timer_duration", {
-        duration: parseInt(newDuration),
-      });
-      fetchTimerDuration();
-      setNewDuration("");
-    } catch (err) {
-      console.error("Error updating timer duration:", err);
-    }
-  };
+    // Listen for real-time updates
+    socket.on("timer_started", (data) => {
+      setRealTimeUpdates((prev) => [
+        ...prev,
+        `Timer started: CAN ID ${data.can_id}, Table ${data.table_id}`
+      ]);
+      fetchTablesStatus();
+    });
+
+    socket.on("timer_ended", (data) => {
+      setRealTimeUpdates((prev) => [
+        ...prev,
+        `Timer ended for CAN ID: ${data.can_id}`
+      ]);
+      fetchTablesStatus();
+    });
+
+    return () => {
+      socket.off("timer_started");
+      socket.off("timer_ended");
+    };
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
@@ -74,22 +74,15 @@ function AdminDashboard() {
         ) : (
           <p>No active reservations.</p>
         )}
-        <h2 className="text-xl font-bold mt-6">Timer Duration</h2>
-        <p className="mb-2">Current Duration: {timerDuration} seconds</p>
-        <div className="flex items-center space-x-4">
-          <input
-            type="text"
-            placeholder="Enter new duration"
-            value={newDuration}
-            onChange={(e) => setNewDuration(e.target.value)}
-            className="flex-1 p-2 border rounded-lg"
-          />
-          <button
-            onClick={updateTimerDuration}
-            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
-          >
-            Update
-          </button>
+        <div className="mt-6">
+          <h2 className="text-lg font-bold">Real-Time Updates</h2>
+          <ul>
+            {realTimeUpdates.map((update, index) => (
+              <li key={index} className="mt-2 text-sm text-gray-700">
+                {update}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
