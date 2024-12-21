@@ -1,97 +1,60 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import io from "socket.io-client";
+import React, { useEffect, useState } from 'react';
+import { getTimerStatus, endTimer } from '../services/api';
 
-const socket = io("http://127.0.0.1:5000"); // Connect to the backend
+const TimerStatus = () => {
+  const [status, setStatus] = useState(null);
 
-function TimerStatus() {
-  const [canId, setCanId] = useState("");
-  const [timer, setTimer] = useState(null);
-  const [error, setError] = useState("");
-  const [realTimeUpdates, setRealTimeUpdates] = useState([]);
+  const canId = '123456789'; // Replace this with dynamic CAN ID based on login
 
   const fetchTimerStatus = async () => {
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:5000/get_timer_status/${canId}`
-      );
-      setTimer(response.data);
-      setError("");
-    } catch (err) {
-      setError(err.response?.data?.error || "Error fetching timer status");
-      setTimer(null);
+      const response = await getTimerStatus(canId);
+      setStatus(response.data);
+    } catch {
+      alert('No active timer found.');
+      setStatus(null);
+    }
+  };
+
+  const handleEnd = async () => {
+    try {
+      await endTimer(canId);
+      alert('Timer ended successfully.');
+      fetchTimerStatus();
+    } catch (error) {
+      alert('Failed to end timer.');
     }
   };
 
   useEffect(() => {
-    // Listen for real-time updates
-    socket.on("timer_started", (data) => {
-      setRealTimeUpdates((prev) => [
-        ...prev,
-        `Timer started: CAN ID ${data.can_id}, Table ${data.table_id}`
-      ]);
-    });
-
-    socket.on("timer_ended", (data) => {
-      setRealTimeUpdates((prev) => [
-        ...prev,
-        `Timer ended for CAN ID: ${data.can_id}`
-      ]);
-    });
-
-    return () => {
-      socket.off("timer_started");
-      socket.off("timer_ended");
-    };
+    fetchTimerStatus(); // Fetch timer status when the component loads
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h1 className="text-2xl font-bold text-center text-gray-700 mb-4">
-          Check Timer Status
-        </h1>
-        <input
-          type="text"
-          placeholder="Enter CAN ID"
-          value={canId}
-          onChange={(e) => setCanId(e.target.value)}
-          className="w-full p-2 border rounded-lg mb-4"
-        />
-        <button
-          onClick={fetchTimerStatus}
-          className="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
-        >
-          Check Timer
-        </button>
-        {timer && (
-          <div className="mt-4 bg-green-100 p-4 rounded-lg">
-            <p>
-              <strong>Table ID:</strong> {timer.table_id}
-            </p>
-            <p>
-              <strong>Remaining Time:</strong> {timer.remaining_time} seconds
-            </p>
-          </div>
-        )}
-        {error && (
-          <div className="mt-4 bg-red-100 p-4 rounded-lg text-red-700">
-            {error}
-          </div>
-        )}
-        <div className="mt-6">
-          <h2 className="text-lg font-bold">Real-Time Updates</h2>
-          <ul>
-            {realTimeUpdates.map((update, index) => (
-              <li key={index} className="mt-2 text-sm text-gray-700">
-                {update}
-              </li>
-            ))}
-          </ul>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Timer Status</h1>
+      {status ? (
+        <div>
+          <p>Table ID: {status.table_id}</p>
+          <p>Remaining Time: {status.remaining_time}s</p>
         </div>
-      </div>
+      ) : (
+        <p>No active timer.</p>
+      )}
+      <button
+        onClick={fetchTimerStatus}
+        className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-4"
+      >
+        Refresh Timer Status
+      </button>
+      <button
+        onClick={handleEnd}
+        className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 mt-4 ml-2"
+      >
+        End Timer
+      </button>
     </div>
   );
-}
+};
 
 export default TimerStatus;

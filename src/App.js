@@ -1,21 +1,19 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import TimerStatus from "./pages/TimerStatus";
-import AdminDashboard from "./pages/AdminDashboard";
-import Navbar from "./components/Navbar";
+import React from 'react';
+import Login from './pages/Login';
+import TimerStatus from './pages/TimerStatus';
+import AdminDashboard from './pages/AdminDashboard';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
-function App() {
+const App = () => {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<TimerStatus />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/timer-status" element={<TimerStatus />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;
