@@ -14,12 +14,15 @@ const ProtectedRoute = ({ children }) => {
       try {
         const response = await getUser();
         setUser(response.data);
+        console.log("kinda cool");
       } catch {
         setUser(null);
+        console.log("kinda null");
       }
       setLoading(false);
     };
     fetchUser();
+    console.log()
   }, []);
 
   if (loading) return <p>Loading...</p>;
@@ -36,6 +39,7 @@ const App = () => {
       alert('Failed to log out');
     }
   };
+
 
   return (
     <Router>

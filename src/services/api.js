@@ -7,7 +7,10 @@ const api = axios.create({
   withCredentials: true, // Enables session management
 });
 
-export const login = (can_id, is_admin) => api.post('/login', { can_id, is_admin });
+export const login = (data) => api.post('/login', data);
+
+
+
 
 export const getUser = () => api.get('/user');
 
