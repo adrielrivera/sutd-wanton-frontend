@@ -28,3 +28,4 @@ export const updateTimerDuration = (duration) => api.post('/update_timer_duratio
 
 export const countOccupiedTables = () => api.get('/count_occupied_tables');
 
+export const setTableVacant = (table_id) => api.post('/set_table_vacant', { table_id });
