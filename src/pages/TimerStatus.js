@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { getTimerStatus, endTimer } from '../services/api';
+import { getTimerStatus, endTimer, getUser } from '../services/api';
 
 const TimerStatus = () => {
   const [status, setStatus] = useState(null);
+  const [canId, setCanId] = useState('');
 
-  const canId = '123456789'; // Replace this with dynamic CAN ID based on login
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await getUser();
+        setCanId(response.data.can_id);
+      } catch (error) {
+        alert('Session expired. Please log in again.');
+        window.location.href = '/'; // Redirect to login
+      }
+    };
+    fetchUser();
+  }, []);
 
   const fetchTimerStatus = async () => {
     try {
@@ -27,8 +39,8 @@ const TimerStatus = () => {
   };
 
   useEffect(() => {
-    fetchTimerStatus(); // Fetch timer status when the component loads
-  }, []);
+    if (canId) fetchTimerStatus();
+  }, [canId]);
 
   return (
     <div className="p-4">

@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
+import { login, getUser } from '../services/api';
 
 const Login = () => {
   const [canId, setCanId] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
+  // Check if user is already logged in
+  React.useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await getUser();
+        if (response.data.is_admin) {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/timer-status');
+        }
+      } catch (error) {
+        console.log('No active session');
+      }
+    };
+    checkSession();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
