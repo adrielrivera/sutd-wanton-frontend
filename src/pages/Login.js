@@ -7,28 +7,16 @@ const Login = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user is already logged in
-  React.useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const response = await getUser();
-        if (response.data.is_admin) {
-          navigate('/admin-dashboard');
-        } else {
-          navigate('/timer-status');
-        }
-      } catch (error) {
-        console.log('No active session');
-      }
-    };
-    checkSession();
-  }, [navigate]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login(canId, isAdmin);
-      navigate(isAdmin ? '/admin-dashboard' : '/timer-status');
+      const user = await getUser();
+      if (user.data.is_admin) {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/timer-status');
+      }
     } catch (error) {
       alert('Login failed. Please check your CAN ID.');
     }
