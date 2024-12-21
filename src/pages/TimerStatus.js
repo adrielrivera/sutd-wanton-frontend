@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { getTimerStatus, endTimer, getUser } from '../services/api';
+import { getTimerStatus, endTimer, getUser, countOccupiedTables } from '../services/api';
 
 const TimerStatus = () => {
   const [status, setStatus] = useState(null);
   const [canId, setCanId] = useState('');
+  const [occupiedTables, setOccupiedTables] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -28,18 +29,30 @@ const TimerStatus = () => {
     }
   };
 
+  const fetchOccupiedTables = async () => {
+    try {
+      const response = await countOccupiedTables();
+      setOccupiedTables(response.data.occupied_tables);
+    } catch (error) {
+      alert('Failed to fetch occupied tables.');
+    }
+  };
+
   const handleEnd = async () => {
     try {
       await endTimer(canId);
       alert('Timer ended successfully.');
-      fetchTimerStatus();
+      fetchTimerStatus(); // Refresh the timer status after ending it
     } catch (error) {
       alert('Failed to end timer.');
     }
   };
 
   useEffect(() => {
-    if (canId) fetchTimerStatus();
+    if (canId) {
+      fetchTimerStatus();
+      fetchOccupiedTables(); // Fetch occupied tables on load
+    }
   }, [canId]);
 
   return (
@@ -53,11 +66,18 @@ const TimerStatus = () => {
       ) : (
         <p>No active timer.</p>
       )}
+      <p className="mt-4">Occupied Tables: {occupiedTables}</p>
       <button
         onClick={fetchTimerStatus}
         className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-4"
       >
         Refresh Timer Status
+      </button>
+      <button
+        onClick={fetchOccupiedTables}
+        className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 mt-4"
+      >
+        Refresh Occupied Tables
       </button>
       <button
         onClick={handleEnd}

@@ -25,3 +25,6 @@ export const endTimer = (can_id) => api.post(`/end_timer/${can_id}`);
 export const getTimerDuration = () => api.get('/get_timer_duration');
 
 export const updateTimerDuration = (duration) => api.post('/update_timer_duration', { duration });
+
+export const countOccupiedTables = () => api.get('/count_occupied_tables');
+
